@@ -10,6 +10,27 @@
 #include "TextureManager.h"
 #include "Widgets/SImGuiLayout.h"
 
+class ImGuiDebugTool;
+
+class ImGuiDebugToolMenuElt
+{
+
+public :
+	void SetDebugTool(ImGuiDebugTool* debugTool) { m_DebugTool = debugTool; }
+	ImGuiDebugTool* GetDebugTool() const {return m_DebugTool;}
+
+	void SetText(FString text) { m_Text = text; }
+	FString GetText() const { return m_Text; }
+	TArray<ImGuiDebugToolMenuElt>& GetChildren() {return m_Children;}
+
+protected :
+
+	FString m_Text;
+	TArray<ImGuiDebugToolMenuElt> m_Children;
+	ImGuiDebugTool* m_DebugTool {nullptr};
+};
+
+
 
 // Central manager that implements module logic. It initializes and controls remaining module components.
 class FImGuiModuleManager
@@ -34,6 +55,14 @@ public:
 	// Event called right after ImGui is updated, to give other subsystems chance to react.
 	FSimpleMulticastDelegate& OnPostImGuiUpdate() { return PostImGuiUpdateEvent; }
 
+
+	void RegisterDebugTool(ImGuiDebugTool* debugTool);
+	void UnregisterDebugTool(ImGuiDebugTool* debugTool);
+
+protected:
+	void DrawControls(int32 ContextIndex);
+	void RefreshDebugToolMenu();
+	void AddMenuElt(ImGuiDebugToolMenuElt& elt);
 private:
 
 	FImGuiModuleManager();
@@ -92,4 +121,8 @@ private:
 	FDelegateHandle ViewportCreatedHandle;
 
 	bool bTexturesLoaded = false;
+
+	TArray<ImGuiDebugTool*> m_DebugTools;
+	TArray<ImGuiDebugToolMenuElt> m_MenuDebugToolElts;
+	bool m_NeedMenuRefresh{false};
 };

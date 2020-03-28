@@ -6,7 +6,7 @@
 
 #include "ImGuiInteroperability.h"
 #include "Utilities/WorldContextIndex.h"
-
+#include "ImGuiDebugTool.h"
 #include <Modules/ModuleManager.h>
 
 #include <imgui.h>
@@ -68,6 +68,18 @@ FImGuiModuleManager::~FImGuiModuleManager()
 	ReleaseTickInitializer();
 	UnregisterTick();
 }
+
+void FImGuiModuleManager::RegisterDebugTool(ImGuiDebugTool* debugTool)
+{
+	m_DebugTools.Add(debugTool);
+	m_NeedMenuRefresh = true;
+}
+void FImGuiModuleManager::UnregisterDebugTool(ImGuiDebugTool* debugTool)
+{
+	m_DebugTools.Remove(debugTool);
+	m_NeedMenuRefresh = true;
+}
+
 
 void FImGuiModuleManager::LoadTextures()
 {
@@ -218,5 +230,125 @@ void FImGuiModuleManager::AddWidgetsToActiveViewports()
 
 void FImGuiModuleManager::OnContextProxyCreated(int32 ContextIndex, FImGuiContextProxy& ContextProxy)
 {
-	ContextProxy.OnDraw().AddLambda([this, ContextIndex]() { ImGuiDemo.DrawControls(ContextIndex); });
+	ContextProxy.OnDraw().AddLambda([this, ContextIndex]() { DrawControls(ContextIndex); });
+}
+
+void FImGuiModuleManager::RefreshDebugToolMenu()
+{
+	for (ImGuiDebugTool* debugTool : m_DebugTools)
+	{
+		TArray<FString> menuPath;
+		debugTool->GetMenuPath(menuPath);
+
+		ImGuiDebugToolMenuElt* currElt = nullptr;
+		if (m_MenuDebugToolElts.Num() != 0)
+		{
+			for (ImGuiDebugToolMenuElt& elt : m_MenuDebugToolElts)
+			{
+				if (elt.GetText() == menuPath[0])
+				{
+					currElt = &elt;
+					break;
+				}
+			}
+		}
+		if (currElt == 0)
+		{
+			ImGuiDebugToolMenuElt elt;
+			elt.SetText(menuPath[0]);
+			m_MenuDebugToolElts.Add(elt);
+			currElt = &m_MenuDebugToolElts[m_MenuDebugToolElts.Num() - 1];
+		}
+
+		int index = 0;
+		for (FString menuItem : menuPath)
+		{
+			if (index == 0)
+			{
+				continue;
+			}
+			for (ImGuiDebugToolMenuElt& elt : currElt->GetChildren())
+			{
+				if (elt.GetText() == menuItem)
+				{
+					currElt = &elt;
+				}
+			}
+			index++;
+		}
+		ImGuiDebugToolMenuElt newElt;
+		newElt.SetText(menuPath[menuPath.Num() - 1]);
+		newElt.SetDebugTool(debugTool);
+		currElt->GetChildren().Add(newElt);
+	}
+	m_NeedMenuRefresh = false;
+}
+
+void FImGuiModuleManager::AddMenuElt(ImGuiDebugToolMenuElt& elt)
+{
+	if (elt.GetDebugTool() == nullptr)
+	{
+		if (ImGui::BeginMenu(TCHAR_TO_ANSI(*(elt.GetText()))))
+		{
+			for (ImGuiDebugToolMenuElt& childElt : elt.GetChildren())
+			{
+				AddMenuElt(childElt);
+			}
+			ImGui::EndMenu();
+		}
+	}
+	else
+	{
+		if (ImGui::MenuItem(TCHAR_TO_ANSI(*(elt.GetText()))))
+		{
+			elt.GetDebugTool()->Toggle();
+		}
+	}
+}
+
+void FImGuiModuleManager::DrawControls(int32 ContextIndex)
+{
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(500, 0));
+
+	bool my_tool_active = true;
+	ImGui::Begin("", &my_tool_active, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+	if (m_NeedMenuRefresh)
+	{
+		RefreshDebugToolMenu();
+	}
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::BeginMenu("Open..", "Ctrl+O"))
+			{
+				if (ImGui::MenuItem("Open2"))
+				{
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::MenuItem("Save", "Ctrl+S")) {}
+			if (ImGui::MenuItem("Close", "Ctrl+W")) { my_tool_active = false; }
+			ImGui::EndMenu();
+		}
+
+		for (ImGuiDebugToolMenuElt& elt : m_MenuDebugToolElts)
+		{
+			AddMenuElt(elt);
+		}
+	}
+	ImGui::EndMenuBar();
+
+	ImGui::End();
+
+	for (ImGuiDebugTool* debugTool : m_DebugTools)
+	{
+		if (debugTool->IsActive())
+		{
+			debugTool->Display();
+		}
+	}
 }

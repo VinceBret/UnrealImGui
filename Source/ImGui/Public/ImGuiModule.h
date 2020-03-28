@@ -8,6 +8,7 @@
 
 #include <Modules/ModuleManager.h>
 
+class FImGuiModuleManager;
 
 class FImGuiModule : public IModuleInterface
 {
@@ -33,6 +34,8 @@ public:
 	{
 		return FModuleManager::Get().IsModuleLoaded("ImGui");
 	}
+
+	static FImGuiModuleManager* GetImGuiModuleManager();
 
 #if IMGUI_WITH_OBSOLETE_DELEGATES
 

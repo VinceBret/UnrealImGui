@@ -37,6 +37,11 @@ struct EDelegateCategory
 
 static FImGuiModuleManager* ImGuiModuleManager = nullptr;
 
+FImGuiModuleManager* FImGuiModule::GetImGuiModuleManager()
+{
+	return ImGuiModuleManager;
+}
+
 #if WITH_EDITOR
 static FImGuiEditor* ImGuiEditor = nullptr;
 #endif
