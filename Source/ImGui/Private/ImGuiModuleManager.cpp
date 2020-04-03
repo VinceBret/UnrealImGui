@@ -10,7 +10,7 @@
 #include <Modules/ModuleManager.h>
 
 #include <imgui.h>
-
+#include "ImGuiColor.h"
 
 // High enough z-order guarantees that ImGui output is rendered on top of the game UI.
 constexpr int32 IMGUI_WIDGET_Z_ORDER = 10000;
@@ -19,7 +19,6 @@ constexpr int32 IMGUI_WIDGET_Z_ORDER = 10000;
 FImGuiModuleManager::FImGuiModuleManager()
 	: Commands(Properties)
 	, Settings(Properties, Commands)
-	, ImGuiDemo(Properties)
 {
 	// Register in context manager to get information whenever a new context proxy is created.
 	ContextManager.OnContextProxyCreated().AddRaw(this, &FImGuiModuleManager::OnContextProxyCreated);
@@ -230,7 +229,7 @@ void FImGuiModuleManager::AddWidgetsToActiveViewports()
 
 void FImGuiModuleManager::OnContextProxyCreated(int32 ContextIndex, FImGuiContextProxy& ContextProxy)
 {
-	ContextProxy.OnDraw().AddLambda([this, ContextIndex]() { DrawControls(ContextIndex); });
+	ContextProxy.OnDraw().AddLambda([this, ContextIndex]() { Display(ContextIndex); });
 }
 
 void FImGuiModuleManager::RefreshDebugToolMenu()
@@ -306,49 +305,74 @@ void FImGuiModuleManager::AddMenuElt(ImGuiDebugToolMenuElt& elt)
 	}
 }
 
-void FImGuiModuleManager::DrawControls(int32 ContextIndex)
+void FImGuiModuleManager::Display(int32 ContextIndex)
 {
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(500, 0));
 
-	bool my_tool_active = true;
-	ImGui::Begin("", &my_tool_active, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-
-	if (m_NeedMenuRefresh)
+	if (GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
 	{
-		RefreshDebugToolMenu();
-	}
+		const FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowSize(ImVec2(viewportSize.X, 0));
+
+		bool my_tool_active = true;
+		ImGui::Begin("", &my_tool_active, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+		if (m_NeedMenuRefresh)
 		{
-			if (ImGui::BeginMenu("Open..", "Ctrl+O"))
+			RefreshDebugToolMenu();
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Open2"))
+				if (ImGui::BeginMenu("Open..", "Ctrl+O"))
 				{
+					if (ImGui::MenuItem("Open2"))
+					{
+					}
+					ImGui::EndMenu();
 				}
+				if (ImGui::MenuItem("Save", "Ctrl+S")) {}
+				if (ImGui::MenuItem("Close", "Ctrl+W")) { my_tool_active = false; }
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-			if (ImGui::MenuItem("Close", "Ctrl+W")) { my_tool_active = false; }
-			ImGui::EndMenu();
+
+			for (ImGuiDebugToolMenuElt& elt : m_MenuDebugToolElts)
+			{
+				AddMenuElt(elt);
+			}
 		}
+		ImGui::EndMenuBar();
 
-		for (ImGuiDebugToolMenuElt& elt : m_MenuDebugToolElts)
+		ImGui::End();
+
+
+		ImGui::SetNextWindowPos(ImVec2(0.0f, viewportSize.Y - 30), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(300, 0));
+		bool my_input_info_active = true;
+		ImGui::PushStyleColor(ImGuiCol_Border, ImGui_COLOR_RED);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui_COLOR_WHITE);
+		ImGui::PushStyleColor(ImGuiCol_Text, ImGui_COLOR_RED);
+		ImGui::Begin("Input info", &my_input_info_active, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+		if (Properties.IsInputEnabled())
 		{
-			AddMenuElt(elt);
+			ImGui::Text("ImGui input on : press %s to disable", TCHAR_TO_ANSI(*(Settings.GetToggleInputKey().Key.ToString())));
 		}
-	}
-	ImGui::EndMenuBar();
-
-	ImGui::End();
-
-	for (ImGuiDebugTool* debugTool : m_DebugTools)
-	{
-		if (debugTool->IsActive())
+		else
 		{
-			debugTool->Display();
+			ImGui::Text("ImGui input off : press %s to enable", TCHAR_TO_ANSI(*(Settings.GetToggleInputKey().Key.ToString())));
+		}
+		ImGui::End();
+		ImGui::PopStyleColor(3);
+
+		for (ImGuiDebugTool* debugTool : m_DebugTools)
+		{
+			if (debugTool->IsActive())
+			{
+				debugTool->Display();
+			}
 		}
 	}
 }

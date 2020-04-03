@@ -13,7 +13,6 @@ const TCHAR* const FImGuiModuleCommands::ToggleGamepadNavigation = TEXT("ImGui.T
 const TCHAR* const FImGuiModuleCommands::ToggleKeyboardInputSharing = TEXT("ImGui.ToggleKeyboardInputSharing");
 const TCHAR* const FImGuiModuleCommands::ToggleGamepadInputSharing = TEXT("ImGui.ToggleGamepadInputSharing");
 const TCHAR* const FImGuiModuleCommands::ToggleMouseInputSharing = TEXT("ImGui.ToggleMouseInputSharing");
-const TCHAR* const FImGuiModuleCommands::ToggleDemo = TEXT("ImGui.ToggleDemo");
 
 FImGuiModuleCommands::FImGuiModuleCommands(FImGuiModuleProperties& InProperties)
 	: Properties(InProperties)
@@ -35,9 +34,6 @@ FImGuiModuleCommands::FImGuiModuleCommands(FImGuiModuleProperties& InProperties)
 	, ToggleMouseInputSharingCommand(ToggleMouseInputSharing,
 		TEXT("Toggle ImGui mouse input sharing."),
 		FConsoleCommandDelegate::CreateRaw(this, &FImGuiModuleCommands::ToggleMouseInputSharingImpl))
-	, ToggleDemoCommand(ToggleDemo,
-		TEXT("Toggle ImGui demo."),
-		FConsoleCommandDelegate::CreateRaw(this, &FImGuiModuleCommands::ToggleDemoImpl))
 {
 }
 
@@ -76,7 +72,3 @@ void FImGuiModuleCommands::ToggleMouseInputSharingImpl()
 	Properties.ToggleMouseInputSharing();
 }
 
-void FImGuiModuleCommands::ToggleDemoImpl()
-{
-	Properties.ToggleDemo();
-}

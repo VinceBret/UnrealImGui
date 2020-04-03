@@ -245,49 +245,6 @@ const FImGuiModuleProperties& FImGuiModule::GetProperties() const
 	return ImGuiModuleManager->GetProperties();
 }
 
-bool FImGuiModule::IsInputMode() const
-{
-	return ImGuiModuleManager && ImGuiModuleManager->GetProperties().IsInputEnabled();
-}
-
-void FImGuiModule::SetInputMode(bool bEnabled)
-{
-	if (ImGuiModuleManager)
-	{
-		ImGuiModuleManager->GetProperties().SetInputEnabled(bEnabled);
-	}
-}
-
-void FImGuiModule::ToggleInputMode()
-{
-	if (ImGuiModuleManager)
-	{
-		ImGuiModuleManager->GetProperties().ToggleInput();
-	}
-}
-
-bool FImGuiModule::IsShowingDemo() const
-{
-	return ImGuiModuleManager && ImGuiModuleManager->GetProperties().ShowDemo();
-}
-
-void FImGuiModule::SetShowDemo(bool bShow)
-{
-	if (ImGuiModuleManager)
-	{
-		ImGuiModuleManager->GetProperties().SetShowDemo(bShow);
-	}
-}
-
-void FImGuiModule::ToggleShowDemo()
-{
-	if (ImGuiModuleManager)
-	{
-		ImGuiModuleManager->GetProperties().ToggleDemo();
-	}
-}
-
-
 //----------------------------------------------------------------------------------------------------
 // Runtime loader
 //----------------------------------------------------------------------------------------------------

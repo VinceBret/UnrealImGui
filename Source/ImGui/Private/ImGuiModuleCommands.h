@@ -19,8 +19,7 @@ public:
 	static const TCHAR* const ToggleKeyboardInputSharing;
 	static const TCHAR* const ToggleGamepadInputSharing;
 	static const TCHAR* const ToggleMouseInputSharing;
-	static const TCHAR* const ToggleDemo;
-
+	
 	FImGuiModuleCommands(FImGuiModuleProperties& InProperties);
 
 	void SetKeyBinding(const TCHAR* CommandName, const FImGuiKeyInfo& KeyInfo);
@@ -33,8 +32,7 @@ private:
 	void ToggleKeyboardInputSharingImpl();
 	void ToggleGamepadInputSharingImpl();
 	void ToggleMouseInputSharingImpl();
-	void ToggleDemoImpl();
-
+	
 	FImGuiModuleProperties& Properties;
 
 	FAutoConsoleCommand ToggleInputCommand;
@@ -43,5 +41,4 @@ private:
 	FAutoConsoleCommand ToggleKeyboardInputSharingCommand;
 	FAutoConsoleCommand ToggleGamepadInputSharingCommand;
 	FAutoConsoleCommand ToggleMouseInputSharingCommand;
-	FAutoConsoleCommand ToggleDemoCommand;
 };

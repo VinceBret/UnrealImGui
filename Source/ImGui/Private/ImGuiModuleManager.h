@@ -3,7 +3,6 @@
 #pragma once
 
 #include "ImGuiContextManager.h"
-#include "ImGuiDemo.h"
 #include "ImGuiModuleCommands.h"
 #include "ImGuiModuleProperties.h"
 #include "ImGuiModuleSettings.h"
@@ -60,7 +59,7 @@ public:
 	void UnregisterDebugTool(ImGuiDebugTool* debugTool);
 
 protected:
-	void DrawControls(int32 ContextIndex);
+	void Display(int32 ContextIndex);
 	void RefreshDebugToolMenu();
 	void AddMenuElt(ImGuiDebugToolMenuElt& elt);
 private:
@@ -103,9 +102,6 @@ private:
 
 	// ImGui settings proxy (valid in every loading stage).
 	FImGuiModuleSettings Settings;
-
-	// Widget that we add to all created contexts to draw ImGui demo. 
-	FImGuiDemo ImGuiDemo;
 
 	// Manager for ImGui contexts.
 	FImGuiContextManager ContextManager;
