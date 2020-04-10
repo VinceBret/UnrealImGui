@@ -20,32 +20,6 @@ void UImGuiSettings::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	if (SwitchInputModeKey_DEPRECATED.Key.IsValid() && !ToggleInput.Key.IsValid())
-	{
-		const FString ConfigFileName = GetDefaultConfigFilename();
-
-		// Move value to the new property.
-		ToggleInput = MoveTemp(SwitchInputModeKey_DEPRECATED);
-
-		// Remove from configuration file entry for obsolete property.
-		if (FConfigFile* ConfigFile = GConfig->Find(ConfigFileName, false))
-		{
-			if (FConfigSection* Section = ConfigFile->Find(TEXT("/Script/ImGui.ImGuiSettings")))
-			{
-				if (Section->Remove(TEXT("SwitchInputModeKey")))
-				{
-					ConfigFile->Dirty = true;
-					GConfig->Flush(false, ConfigFileName);
-				}
-			}
-		}
-
-		// Add to configuration file entry for new property.
-		UpdateSinglePropertyInConfigFile(
-			UImGuiSettings::StaticClass()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(UImGuiSettings, ToggleInput)),
-			ConfigFileName);
-	}
-
 	if (IsTemplate())
 	{
 		DefaultInstance = this;
@@ -103,6 +77,8 @@ void FImGuiModuleSettings::UpdateSettings()
 		SetShareMouseInput(SettingsObject->bShareMouseInput);
 		SetUseSoftwareCursor(SettingsObject->bUseSoftwareCursor);
 		SetToggleInputKey(SettingsObject->ToggleInput);
+		SetToggleImGuiKey(SettingsObject->ToggleImGui);
+		SetToggleImGuiByDefault(SettingsObject->bToggleImGuiByDefault);
 	}
 }
 
@@ -158,6 +134,21 @@ void FImGuiModuleSettings::SetToggleInputKey(const FImGuiKeyInfo& KeyInfo)
 		ToggleInputKey = KeyInfo;
 		Commands.SetKeyBinding(FImGuiModuleCommands::ToggleInput, ToggleInputKey);
 	}
+}
+
+void FImGuiModuleSettings::SetToggleImGuiKey(const FImGuiKeyInfo& KeyInfo)
+{
+	if (ToggleImGuiKey != KeyInfo)
+	{
+		ToggleImGuiKey = KeyInfo;
+		Commands.SetKeyBinding(FImGuiModuleCommands::ToggleImGui, ToggleImGuiKey);
+	}
+}
+
+void FImGuiModuleSettings::SetToggleImGuiByDefault(bool bShare)
+{
+	bToogleImGuiByDefault = bShare;
+	Properties.SetImGuiEnabled(bToogleImGuiByDefault);
 }
 
 #if WITH_EDITOR

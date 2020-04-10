@@ -14,6 +14,7 @@ class FImGuiModuleCommands
 public:
 
 	static const TCHAR* const ToggleInput;
+	static const TCHAR* const ToggleImGui;
 	static const TCHAR* const ToggleKeyboardNavigation;
 	static const TCHAR* const ToggleGamepadNavigation;
 	static const TCHAR* const ToggleKeyboardInputSharing;
@@ -27,6 +28,7 @@ public:
 private:
 
 	void ToggleInputImpl();
+	void ToggleImGuiImpl();
 	void ToggleKeyboardNavigationImpl();
 	void ToggleGamepadNavigationImpl();
 	void ToggleKeyboardInputSharingImpl();
@@ -36,6 +38,7 @@ private:
 	FImGuiModuleProperties& Properties;
 
 	FAutoConsoleCommand ToggleInputCommand;
+	FAutoConsoleCommand ToggleImGuiCommand;
 	FAutoConsoleCommand ToggleKeyboardNavigationCommand;
 	FAutoConsoleCommand ToggleGamepadNavigationCommand;
 	FAutoConsoleCommand ToggleKeyboardInputSharingCommand;

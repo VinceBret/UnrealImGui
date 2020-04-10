@@ -103,9 +103,11 @@ protected:
 	UPROPERTY(EditAnywhere, config, Category = "Keyboard Shortcuts")
 	FImGuiKeyInfo ToggleInput;
 
-	// Deprecated name for ToggleInput. Kept temporarily to automatically move old configuration.
-	UPROPERTY(config)
-	FImGuiKeyInfo SwitchInputModeKey_DEPRECATED;
+	UPROPERTY(EditAnywhere, config, Category = "Keyboard Shortcuts")
+	FImGuiKeyInfo ToggleImGui;
+
+	UPROPERTY(EditAnywhere, config, Category = "Input")
+	bool bToggleImGuiByDefault = false;
 
 	static UImGuiSettings* DefaultInstance;
 
@@ -148,6 +150,9 @@ public:
 	// Get the shortcut configuration for 'ImGui.ToggleInput' command.
 	const FImGuiKeyInfo& GetToggleInputKey() const { return ToggleInputKey; }
 
+	// Get the shortcut configuration for 'ImGui.ToggleImGui' command.
+	const FImGuiKeyInfo& GetToggleImGuiKey() const { return ToggleImGuiKey; }
+
 	// Delegate raised when ImGui Input Handle is changed.
 	FStringClassReferenceChangeDelegate OnImGuiInputHandlerClassChanged;
 
@@ -164,6 +169,8 @@ private:
 	void SetShareMouseInput(bool bShare);
 	void SetUseSoftwareCursor(bool bUse);
 	void SetToggleInputKey(const FImGuiKeyInfo& KeyInfo);
+	void SetToggleImGuiKey(const FImGuiKeyInfo& KeyInfo);
+	void SetToggleImGuiByDefault(bool bUse);
 
 #if WITH_EDITOR
 	void OnPropertyChanged(class UObject* ObjectBeingModified, struct FPropertyChangedEvent& PropertyChangedEvent);
@@ -174,6 +181,8 @@ private:
 
 	FStringClassReference ImGuiInputHandlerClass;
 	FImGuiKeyInfo ToggleInputKey;
+	FImGuiKeyInfo ToggleImGuiKey;
+	bool bToogleImGuiByDefault = false;
 	bool bShareKeyboardInput = false;
 	bool bShareGamepadInput = false;
 	bool bShareMouseInput = false;

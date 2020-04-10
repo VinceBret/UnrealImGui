@@ -10,12 +10,15 @@ public:
 
 	/** Check whether input is enabled. */
 	bool IsInputEnabled() const { return bInputEnabled; }
+	bool IsImGuiEnabled() const { return bImGuiEnabled; }
 
 	/** Enable or disable ImGui input. */
 	void SetInputEnabled(bool bEnabled) { bInputEnabled = bEnabled; }
+	void SetImGuiEnabled(bool bEnabled) { bImGuiEnabled = bEnabled; SetInputEnabled(bEnabled);}
 
 	/** Toggle ImGui input. */
 	void ToggleInput() { SetInputEnabled(!IsInputEnabled()); }
+	void ToggleImGui() { SetImGuiEnabled(!IsImGuiEnabled()); }
 
 	/** Check whether keyboard navigation is enabled. */
 	bool IsKeyboardNavigationEnabled() const { return bKeyboardNavigationEnabled; }
@@ -65,6 +68,7 @@ public:
 private:
 
 	bool bInputEnabled = false;
+	bool bImGuiEnabled = false;
 
 	bool bKeyboardNavigationEnabled = false;
 	bool bGamepadNavigationEnabled = false;

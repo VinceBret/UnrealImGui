@@ -159,6 +159,8 @@ protected:
 	 */
 	bool IsToggleInputEvent(const FKeyEvent& KeyEvent) const;
 
+	bool IsToggleImGuiEvent(const FKeyEvent& KeyEvent) const;
+
 	/**
 	 * Checks whether corresponding ImGui context has an active item (holding cursor focus).
 	 * @returns True, if corresponding context has an active item.

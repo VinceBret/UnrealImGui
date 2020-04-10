@@ -68,9 +68,16 @@ FReply UImGuiInputHandler::OnKeyDown(const FKeyEvent& KeyEvent)
 		const bool bConsume = !ModuleManager->GetProperties().IsKeyboardInputShared();
 
 		// With shared input we can leave command bindings for DebugExec to handle, otherwise we need to do it here.
-		if (bConsume && IsToggleInputEvent(KeyEvent))
+		if (bConsume)
 		{
-			ModuleManager->GetProperties().ToggleInput();
+			if (IsToggleInputEvent(KeyEvent))
+			{
+				ModuleManager->GetProperties().ToggleInput();
+			}
+			else if (IsToggleImGuiEvent(KeyEvent))
+			{
+				ModuleManager->GetProperties().ToggleImGui();
+			}
 		}
 
 		InputState->SetKeyDown(KeyEvent, true);
@@ -283,6 +290,11 @@ namespace
 bool UImGuiInputHandler::IsToggleInputEvent(const FKeyEvent& KeyEvent) const
 {
 	return IsMatchingEvent(KeyEvent, ModuleManager->GetSettings().GetToggleInputKey());
+}
+
+bool UImGuiInputHandler::IsToggleImGuiEvent(const FKeyEvent& KeyEvent) const
+{
+	return IsMatchingEvent(KeyEvent, ModuleManager->GetSettings().GetToggleImGuiKey());
 }
 
 bool UImGuiInputHandler::HasImGuiActiveItem() const
