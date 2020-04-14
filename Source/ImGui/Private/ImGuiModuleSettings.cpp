@@ -74,9 +74,7 @@ void FImGuiModuleSettings::UpdateSettings()
 		SetImGuiInputHandlerClass(SettingsObject->ImGuiInputHandlerClass);
 		SetShareKeyboardInput(SettingsObject->bShareKeyboardInput);
 		SetShareGamepadInput(SettingsObject->bShareGamepadInput);
-		SetShareMouseInput(SettingsObject->bShareMouseInput);
 		SetUseSoftwareCursor(SettingsObject->bUseSoftwareCursor);
-		SetToggleInputKey(SettingsObject->ToggleInput);
 		SetToggleImGuiKey(SettingsObject->ToggleImGui);
 		SetToggleImGuiByDefault(SettingsObject->bToggleImGuiByDefault);
 	}
@@ -109,30 +107,12 @@ void FImGuiModuleSettings::SetShareGamepadInput(bool bShare)
 	}
 }
 
-void FImGuiModuleSettings::SetShareMouseInput(bool bShare)
-{
-	if (bShareMouseInput != bShare)
-	{
-		bShareMouseInput = bShare;
-		Properties.SetMouseInputShared(bShare);
-	}
-}
-
 void FImGuiModuleSettings::SetUseSoftwareCursor(bool bUse)
 {
 	if (bUseSoftwareCursor != bUse)
 	{
 		bUseSoftwareCursor = bUse;
 		OnUseSoftwareCursorChanged.Broadcast(bUse);
-	}
-}
-
-void FImGuiModuleSettings::SetToggleInputKey(const FImGuiKeyInfo& KeyInfo)
-{
-	if (ToggleInputKey != KeyInfo)
-	{
-		ToggleInputKey = KeyInfo;
-		Commands.SetKeyBinding(FImGuiModuleCommands::ToggleInput, ToggleInputKey);
 	}
 }
 

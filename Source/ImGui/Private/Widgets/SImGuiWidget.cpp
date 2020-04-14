@@ -21,40 +21,18 @@
 #include <utility>
 
 
+#define TEXT_BOOL(Val) ((Val) ? TEXT("true") : TEXT("false"))
+
 #if IMGUI_WIDGET_DEBUG
 
 DEFINE_LOG_CATEGORY_STATIC(LogImGuiWidget, Warning, All);
 
 #define IMGUI_WIDGET_LOG(Verbosity, Format, ...) UE_LOG(LogImGuiWidget, Verbosity, Format, __VA_ARGS__)
 
-#define TEXT_INPUT_MODE(Val) (\
-	(Val) == EInputMode::Full ? TEXT("Full") :\
-	(Val) == EInputMode::MousePointerOnly ? TEXT("MousePointerOnly") :\
-	TEXT("None"))
-
-#define TEXT_BOOL(Val) ((Val) ? TEXT("true") : TEXT("false"))
-
 #else
 
 #define IMGUI_WIDGET_LOG(...)
 
-#endif // IMGUI_WIDGET_DEBUG
-
-#if IMGUI_WIDGET_DEBUG
-namespace CVars
-{
-	TAutoConsoleVariable<int> DebugWidget(TEXT("ImGui.Debug.Widget"), 0,
-		TEXT("Show debug for SImGuiWidget.\n")
-		TEXT("0: disabled (default)\n")
-		TEXT("1: enabled"),
-		ECVF_Default);
-
-	TAutoConsoleVariable<int> DebugInput(TEXT("ImGui.Debug.Input"), 0,
-		TEXT("Show debug for input state.\n")
-		TEXT("0: disabled (default)\n")
-		TEXT("1: enabled"),
-		ECVF_Default);
-}
 #endif // IMGUI_WIDGET_DEBUG
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -73,9 +51,6 @@ void SImGuiWidget::Construct(const FArguments& InArgs)
 	// Register debug delegate.
 	auto* ContextProxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex);
 	checkf(ContextProxy, TEXT("Missing context during widget construction: ContextIndex = %d"), ContextIndex);
-#if IMGUI_WIDGET_DEBUG
-	ContextProxy->OnDraw().AddRaw(this, &SImGuiWidget::OnDebugDraw);
-#endif // IMGUI_WIDGET_DEBUG
 
 	// Register for settings change.
 	RegisterImGuiSettingsDelegates();
@@ -90,11 +65,13 @@ void SImGuiWidget::Construct(const FArguments& InArgs)
 	UpdateMouseCursor();
 
 	ChildSlot
-	[
-		SAssignNew(CanvasControlWidget, SImGuiCanvasControl).OnTransformChanged(this, &SImGuiWidget::SetImGuiTransform)
-	];
+		[
+			SAssignNew(CanvasControlWidget, SImGuiCanvasControl).OnTransformChanged(this, &SImGuiWidget::SetImGuiTransform)
+		];
 
 	ImGuiTransform = CanvasControlWidget->GetTransform();
+
+	ImGuiDebugTool_ImGuiDebug::GetInstance()->AddWidget(this);
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
@@ -106,16 +83,10 @@ SImGuiWidget::~SImGuiWidget()
 	// Release ImGui Input Handler.
 	ReleaseInputHandler();
 
-	// Remove binding between this widget and its context proxy.
-	if (auto* ContextProxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex))
-	{
-#if IMGUI_WIDGET_DEBUG
-		ContextProxy->OnDraw().RemoveAll(this);
-#endif // IMGUI_WIDGET_DEBUG
-	}
-
 	// Unregister from post-update notifications.
 	ModuleManager->OnPostImGuiUpdate().RemoveAll(this);
+
+	ImGuiDebugTool_ImGuiDebug::GetInstance()->RemoveWidget(this);
 }
 
 void SImGuiWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
@@ -392,11 +363,10 @@ void SImGuiWidget::UpdateInputState()
 	auto& Properties = ModuleManager->GetProperties();
 	auto* ContextProxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex);
 
-	const bool bEnableTransparentMouseInput = Properties.IsMouseInputShared()
-#if PLATFORM_ANDROID || PLATFORM_IOS
-		&& (FSlateApplication::Get().GetCursorPos() != FVector2D::ZeroVector)
-#endif
-		&& !(ContextProxy->WantsMouseCapture() || ContextProxy->HasActiveItem());
+	const bool wantsMouseCapture = ContextProxy->WantsMouseCapture();
+	const bool hasActiveItem = ContextProxy->HasActiveItem();
+	const bool bEnableTransparentMouseInput = !(wantsMouseCapture || hasActiveItem);
+
 	if (bTransparentMouseInput != bEnableTransparentMouseInput)
 	{
 		bTransparentMouseInput = bEnableTransparentMouseInput;
@@ -432,7 +402,7 @@ void SImGuiWidget::UpdateInputState()
 			ReturnFocus();
 		}
 	}
-	else if(bInputEnabled)
+	else if (bInputEnabled)
 	{
 		const auto& ViewportWidget = GameViewport->GetGameViewportWidget();
 
@@ -442,8 +412,8 @@ void SImGuiWidget::UpdateInputState()
 			// the whole input to match that state.
 			if (GameViewport->GetGameViewportWidget()->HasMouseCapture())
 			{
-				Properties.SetInputEnabled(false);
-				UpdateInputState();
+				/*Properties.SetInputEnabled(false);
+				UpdateInputState();*/
 			}
 		}
 		else
@@ -591,10 +561,10 @@ int32 SImGuiWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeo
 
 FVector2D SImGuiWidget::ComputeDesiredSize(float Scale) const
 {
-	return FVector2D{ 3840.f, 2160.f } * Scale;
+	return FVector2D{ 3840.f, 2160.f } *Scale;
 }
 
-#if IMGUI_WIDGET_DEBUG
+
 
 static TArray<FKey> GetImGuiMappedKeys()
 {
@@ -726,22 +696,30 @@ namespace Styles
 	}
 }
 
-void SImGuiWidget::OnDebugDraw()
+void SImGuiWidget::DisplayImGuiDebug()
 {
 	FImGuiContextProxy* ContextProxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex);
 
-	if (CVars::DebugWidget.GetValueOnGameThread() > 0)
+	if (ContextProxy)
 	{
-		bool bDebug = true;
-		ImGui::SetNextWindowSize(ImVec2(380, 480), ImGuiSetCond_Once);
-		if (ImGui::Begin("ImGui Widget Debug", &bDebug))
+
+		if (ImGui::CollapsingHeader("ImGui Widget Debug", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::Indent();
+
 			ImGui::Spacing();
 
+			TwoColumns::CollapsingGroup("Widget", [&]()
+			{
+				TwoColumns::Value("HasActiveItem ", TEXT_BOOL(ContextProxy->HasActiveItem()));
+				TwoColumns::Value("WantMouseCapture ", TEXT_BOOL(ContextProxy->WantsMouseCapture()));
+				TwoColumns::Value("TransparentMouseInput ", TEXT_BOOL(bTransparentMouseInput));
+			});
+			
 			TwoColumns::CollapsingGroup("Context", [&]()
 			{
 				TwoColumns::Value("Context Index", ContextIndex);
-				TwoColumns::Value("Context Name", ContextProxy ? *ContextProxy->GetName() : TEXT("< Null >"));
+				TwoColumns::Value("Context Name", *ContextProxy->GetName());
 				TwoColumns::Value("Game Viewport", *GameViewport->GetName());
 			});
 
@@ -770,23 +748,16 @@ void SImGuiWidget::OnDebugDraw()
 				auto Widget = PreviousUserFocusedWidget.Pin();
 				TwoColumns::Value("Previous User Focused", Widget.IsValid() ? *Widget->GetTypeAsString() : TEXT("None"));
 			});
-		}
-		ImGui::End();
 
-		if (!bDebug)
-		{
-			CVars::DebugWidget->Set(0, ECVF_SetByConsole);
+			ImGui::Unindent();
 		}
-	}
 
-	if (ContextProxy && CVars::DebugInput.GetValueOnGameThread() > 0)
-	{
 		FImGuiInputState& InputState = ContextProxy->GetInputState();
 
-		bool bDebug = true;
-		ImGui::SetNextWindowSize(ImVec2(460, 480), ImGuiSetCond_Once);
-		if (ImGui::Begin("ImGui Input State", &bDebug))
+		if (ImGui::CollapsingHeader("ImGui Input State", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::Indent();
+
 			const ImVec4 HiglightColor{ 1.f, 1.f, 0.5f, 1.f };
 			Columns::CollapsingGroup("Mapped Keys", 4, [&]()
 			{
@@ -867,18 +838,10 @@ void SImGuiWidget::OnDebugDraw()
 				ImGui::NextColumn(); ImGui::NextColumn();
 			});
 
-			if (!bDebug)
-			{
-				CVars::DebugInput->Set(0, ECVF_SetByConsole);
-			}
+			ImGui::Unindent();
 		}
-		ImGui::End();
 	}
 }
 
-#undef TEXT_INPUT_MODE
 #undef TEXT_BOOL
-
-#endif // IMGUI_WIDGET_DEBUG
-
 #undef IMGUI_WIDGET_LOG

@@ -29,6 +29,27 @@ protected:
 	bool m_CreateWnd{ true };
 };
 
+class SImGuiWidget;
+class ImGuiDebugTool_ImGuiDebug : public ImGuiDebugTool
+{
+	DECLARE_IMGUI_DEBUGTOOL(ImGuiDebugTool_ImGuiDebug)
+
+public:
+	ImGuiDebugTool_ImGuiDebug();
+	virtual ~ImGuiDebugTool_ImGuiDebug();
+
+	FString GetMenuTitle() override { return "ImGui:Debug"; }
+	const char* GetWndTitle() override { return "Debug"; }
+
+	void AddWidget(SImGuiWidget* widget);
+	void RemoveWidget(SImGuiWidget* widget);
+
+protected:
+	void OnDisplay() override;
+
+	TArray<SImGuiWidget*> m_Widgets;
+};
+
 class ImGuiDebugTool_Demo : public ImGuiDebugTool
 {
 	DECLARE_IMGUI_DEBUGTOOL(ImGuiDebugTool_Demo)
@@ -37,7 +58,7 @@ public:
 	ImGuiDebugTool_Demo();
 	virtual ~ImGuiDebugTool_Demo();
 
-	FString GetMenuTitle() override { return TEXT("Demo:Demo"); }
+	FString GetMenuTitle() override { return TEXT("ImGui:Demo"); }
 	const char* GetWndTitle() override { return "Demo"; }
 
 protected:

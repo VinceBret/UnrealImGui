@@ -13,11 +13,9 @@ public:
 	bool IsImGuiEnabled() const { return bImGuiEnabled; }
 
 	/** Enable or disable ImGui input. */
-	void SetInputEnabled(bool bEnabled) { bInputEnabled = bEnabled; }
-	void SetImGuiEnabled(bool bEnabled) { bImGuiEnabled = bEnabled; SetInputEnabled(bEnabled);}
+	void SetImGuiEnabled(bool bEnabled) { bImGuiEnabled = bEnabled; }
 
 	/** Toggle ImGui input. */
-	void ToggleInput() { SetInputEnabled(!IsInputEnabled()); }
 	void ToggleImGui() { SetImGuiEnabled(!IsImGuiEnabled()); }
 
 	/** Check whether keyboard navigation is enabled. */
@@ -55,19 +53,10 @@ public:
 
 	/** Toggle whether gamepad input should be shared with game. */
 	void ToggleGamepadInputSharing() { SetGamepadInputShared(!IsGamepadInputShared()); }
-
-	/** Check whether mouse input is shared with game. */
-	bool IsMouseInputShared() const { return bMouseInputShared; }
-
-	/** Set whether mouse input should be shared with game. */
-	void SetMouseInputShared(bool bShared) { bMouseInputShared = bShared; }
-
-	/** Toggle whether mouse input should be shared with game. */
-	void ToggleMouseInputSharing() { SetMouseInputShared(!IsMouseInputShared()); }
 	
 private:
 
-	bool bInputEnabled = false;
+	bool bInputEnabled = true;
 	bool bImGuiEnabled = false;
 
 	bool bKeyboardNavigationEnabled = false;
@@ -75,5 +64,4 @@ private:
 
 	bool bKeyboardInputShared = false;
 	bool bGamepadInputShared = false;
-	bool bMouseInputShared = false;
 };

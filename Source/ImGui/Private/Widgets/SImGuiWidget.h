@@ -76,6 +76,8 @@ public:
 
 	virtual FReply OnTouchEnded(const FGeometry& MyGeometry, const FPointerEvent& TouchEvent) override;
 
+	void DisplayImGuiDebug();
+
 private:
 
 	void CreateInputHandler(const FStringClassReference& HandlerClassReference);
@@ -113,12 +115,8 @@ private:
 
 	virtual FVector2D ComputeDesiredSize(float) const override;
 
-	void SetImGuiTransform(const FSlateRenderTransform& Transform) { ImGuiTransform = Transform; }
-
-#if IMGUI_WIDGET_DEBUG
-	void OnDebugDraw();
-#endif // IMGUI_WIDGET_DEBUG
-
+	void SetImGuiTransform(const FSlateRenderTransform& Transform) { ImGuiTransform = Transform; }	
+	
 	FImGuiModuleManager* ModuleManager = nullptr;
 	TWeakObjectPtr<UGameViewportClient> GameViewport;
 	TWeakObjectPtr<UImGuiInputHandler> InputHandler;

@@ -349,25 +349,6 @@ void FImGuiModuleManager::Display(int32 ContextIndex)
 
 			ImGui::End();
 
-
-			ImGui::SetNextWindowPos(ImVec2(0.0f, viewportSize.Y - 30), ImGuiCond_Always);
-			ImGui::SetNextWindowSize(ImVec2(300, 0));
-			bool my_input_info_active = true;
-			ImGui::PushStyleColor(ImGuiCol_Border, ImGui_COLOR_RED);
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui_COLOR_WHITE);
-			ImGui::PushStyleColor(ImGuiCol_Text, ImGui_COLOR_RED);
-			ImGui::Begin("Input info", &my_input_info_active, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-			if (Properties.IsInputEnabled())
-			{
-				ImGui::Text("ImGui input on : press %s to disable", TCHAR_TO_ANSI(*(Settings.GetToggleInputKey().Key.ToString())));
-			}
-			else
-			{
-				ImGui::Text("ImGui input off : press %s to enable", TCHAR_TO_ANSI(*(Settings.GetToggleInputKey().Key.ToString())));
-			}
-			ImGui::End();
-			ImGui::PopStyleColor(3);
-
 			for (ImGuiDebugTool* debugTool : m_DebugTools)
 			{
 				if (debugTool->IsActive())

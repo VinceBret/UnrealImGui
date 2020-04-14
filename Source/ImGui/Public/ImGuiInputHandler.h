@@ -152,13 +152,6 @@ protected:
 	bool IsStopPlaySessionEvent(const FKeyEvent& KeyEvent) const;
 #endif
 
-	/**
-	 * Checks whether this key event can toggle ImGui input (as defined in settings).
-	 * @param KeyEvent - Key event to test.
-	 * @returns True, if this key is bound to 'ImGui.ToggleInput' command that switches ImGui input mode.
-	 */
-	bool IsToggleInputEvent(const FKeyEvent& KeyEvent) const;
-
 	bool IsToggleImGuiEvent(const FKeyEvent& KeyEvent) const;
 
 	/**

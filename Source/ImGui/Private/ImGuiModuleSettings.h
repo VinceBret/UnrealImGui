@@ -83,31 +83,17 @@ protected:
 	UPROPERTY(EditAnywhere, config, Category = "Input")
 	bool bShareGamepadInput = false;
 
-	// Whether ImGui should share mouse input with game.
-	// This defines initial behaviour which can be later changed using 'ImGui.ToggleMouseInputSharing' command or
-	// module properties interface.
-	UPROPERTY(EditAnywhere, config, Category = "Input")
-	bool bShareMouseInput = false;
-
 	// If true, then in input mode ImGui will draw its own cursor in place of the hardware one.
 	// When disabled (default) there is a noticeable difference between cursor position seen by ImGui and position on
 	// the screen. Enabling this option removes that effect but with lower frame-rates UI becomes quickly unusable.
 	UPROPERTY(EditAnywhere, config, Category = "Input", AdvancedDisplay)
 	bool bUseSoftwareCursor = false;
 
-	// Define a shortcut key to 'ImGui.ToggleInput' command. Binding is only set if the key field is valid.
-	// Note that modifier key properties can be set to one of the three values: undetermined means that state of the given
-	// modifier is not important, checked means that it needs to be pressed and unchecked means that it cannot be pressed.
-	//
-	// This binding is using Player Input's DebugExecBindings which only works in non-shipment builds.
-	UPROPERTY(EditAnywhere, config, Category = "Keyboard Shortcuts")
-	FImGuiKeyInfo ToggleInput;
-
 	UPROPERTY(EditAnywhere, config, Category = "Keyboard Shortcuts")
 	FImGuiKeyInfo ToggleImGui;
 
 	UPROPERTY(EditAnywhere, config, Category = "Input")
-	bool bToggleImGuiByDefault = false;
+	bool bToggleImGuiByDefault = true;
 
 	static UImGuiSettings* DefaultInstance;
 
@@ -147,9 +133,6 @@ public:
 	// Get the software cursor configuration.
 	bool UseSoftwareCursor() const { return bUseSoftwareCursor; }
 
-	// Get the shortcut configuration for 'ImGui.ToggleInput' command.
-	const FImGuiKeyInfo& GetToggleInputKey() const { return ToggleInputKey; }
-
 	// Get the shortcut configuration for 'ImGui.ToggleImGui' command.
 	const FImGuiKeyInfo& GetToggleImGuiKey() const { return ToggleImGuiKey; }
 
@@ -166,9 +149,7 @@ private:
 	void SetImGuiInputHandlerClass(const FStringClassReference& ClassReference);
 	void SetShareKeyboardInput(bool bShare);
 	void SetShareGamepadInput(bool bShare);
-	void SetShareMouseInput(bool bShare);
 	void SetUseSoftwareCursor(bool bUse);
-	void SetToggleInputKey(const FImGuiKeyInfo& KeyInfo);
 	void SetToggleImGuiKey(const FImGuiKeyInfo& KeyInfo);
 	void SetToggleImGuiByDefault(bool bUse);
 
@@ -180,11 +161,9 @@ private:
 	FImGuiModuleCommands& Commands;
 
 	FStringClassReference ImGuiInputHandlerClass;
-	FImGuiKeyInfo ToggleInputKey;
 	FImGuiKeyInfo ToggleImGuiKey;
 	bool bToogleImGuiByDefault = false;
 	bool bShareKeyboardInput = false;
 	bool bShareGamepadInput = false;
-	bool bShareMouseInput = false;
 	bool bUseSoftwareCursor = false;
 };

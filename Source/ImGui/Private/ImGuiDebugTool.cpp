@@ -1,7 +1,6 @@
 #include "ImGuiDebugTool.h"
 #include "ImGuiModuleManager.h"
-
-IMPLEMENT_IMGUI_DEBUGTOOL(ImGuiDebugTool_Demo)
+#include "Widgets/SImGuiWidget.h"
 
 ImGuiDebugTool::ImGuiDebugTool()
 {
@@ -33,6 +32,40 @@ void ImGuiDebugTool::Display()
 	}
 
 }
+
+
+
+IMPLEMENT_IMGUI_DEBUGTOOL(ImGuiDebugTool_ImGuiDebug)
+
+ImGuiDebugTool_ImGuiDebug::ImGuiDebugTool_ImGuiDebug()
+	: ImGuiDebugTool()
+{
+}
+
+ImGuiDebugTool_ImGuiDebug::~ImGuiDebugTool_ImGuiDebug()
+{
+}
+
+void ImGuiDebugTool_ImGuiDebug::AddWidget(SImGuiWidget* widget)
+{
+	m_Widgets.AddUnique(widget);
+}
+
+void ImGuiDebugTool_ImGuiDebug::RemoveWidget(SImGuiWidget* widget)
+{
+	m_Widgets.Remove(widget);
+}
+
+void ImGuiDebugTool_ImGuiDebug::OnDisplay()
+{
+	for (SImGuiWidget* widget : m_Widgets)
+	{
+		widget->DisplayImGuiDebug();
+	}
+}
+
+IMPLEMENT_IMGUI_DEBUGTOOL(ImGuiDebugTool_Demo)
+
 
 ImGuiDebugTool_Demo::ImGuiDebugTool_Demo()
 	: ImGuiDebugTool()
